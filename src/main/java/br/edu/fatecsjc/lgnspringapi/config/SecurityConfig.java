@@ -12,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-
 import static br.edu.fatecsjc.lgnspringapi.enums.Permission.ADMIN_CREATE;
 import static br.edu.fatecsjc.lgnspringapi.enums.Permission.ADMIN_UPDATE;
 import static br.edu.fatecsjc.lgnspringapi.enums.Role.ADMIN;
@@ -39,6 +38,8 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/"
     };
+    public static final String GROUP_ENDPOINT = "/group/**";
+    public static final String USER_ENDPOINT = "/user/**";
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
@@ -49,10 +50,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
-                                .requestMatchers("/group/**").hasAnyRole(ADMIN.name())
-                                .requestMatchers("/user/**").hasAnyRole(ADMIN.name())
-                                .requestMatchers(POST, "/group/**").hasAnyAuthority(ADMIN_CREATE.name())
-                                .requestMatchers(PUT, "/group/**").hasAnyAuthority(ADMIN_UPDATE.name())
+                                .requestMatchers(GROUP_ENDPOINT).hasAnyRole(ADMIN.name())
+                                .requestMatchers(USER_ENDPOINT).hasAnyRole(ADMIN.name())
+                                .requestMatchers(POST, GROUP_ENDPOINT).hasAnyAuthority(ADMIN_CREATE.name())
+                                .requestMatchers(PUT, GROUP_ENDPOINT).hasAnyAuthority(ADMIN_UPDATE.name())
                                 .anyRequest()
                                 .authenticated()
                 )

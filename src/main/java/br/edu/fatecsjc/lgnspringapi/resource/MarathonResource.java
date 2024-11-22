@@ -1,7 +1,7 @@
 package br.edu.fatecsjc.lgnspringapi.resource;
 
-import br.edu.fatecsjc.lgnspringapi.dto.GroupDTO;
-import br.edu.fatecsjc.lgnspringapi.service.GroupService;
+import br.edu.fatecsjc.lgnspringapi.dto.MarathonDTO;
+import br.edu.fatecsjc.lgnspringapi.service.MarathonService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -10,90 +10,97 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/group")
+@RequestMapping("/marathon")
+@Tag(name = "Marathon")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Group and Members")
 @SecurityRequirement(name = "bearerAuth")
-public class GroupResource {
-    private final GroupService groupService;
+public class MarathonResource {
+
+    private final MarathonService marathonService;
 
     @Autowired
-    public GroupResource(GroupService groupService) {
-        this.groupService = groupService;
+    public MarathonResource(MarathonService marathonService) {
+        this.marathonService = marathonService;
     }
 
     @GetMapping
     @Operation(
-            description = "Get all groups and members",
+            description = "Get all marathons",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200"),
                     @ApiResponse(description = "Unauthorized/Invalid token", responseCode = "403"),
                     @ApiResponse(description = "Unknown error", responseCode = "400"),
             }
     )
-    public ResponseEntity<List<GroupDTO>> getAllGroups() {
-        return ResponseEntity.ok(groupService.getAll());
+    public ResponseEntity<List<MarathonDTO>> getAllMarathons() {
+        return ResponseEntity.ok(marathonService.getAll());
     }
 
     @GetMapping("/{id}")
     @Operation(
-            description = "Get a group and members by group ID",
+            description = "Get a marathon by marathon ID",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200"),
                     @ApiResponse(description = "Unauthorized/Invalid token", responseCode = "403"),
                     @ApiResponse(description = "Unknown error", responseCode = "400"),
             }
     )
-    public ResponseEntity<GroupDTO> getGroupById(@PathVariable Long id) {
-        return ResponseEntity.ok(groupService.findById(id));
+    public ResponseEntity<MarathonDTO> getMarathonById(@PathVariable Long id) {
+        return ResponseEntity.ok(marathonService.findById(id));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('admin:update')")
     @Operation(
-            description = "Update a group and members by group ID",
+            description = "Update a marathon by marathon ID",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "201"),
                     @ApiResponse(description = "Unauthorized/Invalid token", responseCode = "403"),
                     @ApiResponse(description = "Unknown error", responseCode = "400"),
             }
     )
-    public ResponseEntity<GroupDTO> update(@PathVariable Long id, @RequestBody GroupDTO body) {
+    public ResponseEntity<MarathonDTO> update(@PathVariable Long id, @RequestBody MarathonDTO body) {
         return ResponseEntity.status(HttpStatusCode.valueOf(201))
-                .body(groupService.save(id, body));
+                .body(marathonService.save(id, body));
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin:create')")
     @Operation(
-            description = "Register a new group and members",
+            description = "Register a new marathon",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "201"),
                     @ApiResponse(description = "Unauthorized/Invalid token", responseCode = "403"),
                     @ApiResponse(description = "Unknown error", responseCode = "400"),
             }
     )
-    public ResponseEntity<GroupDTO> register(@RequestBody GroupDTO body) {
+    public ResponseEntity<MarathonDTO> register(@RequestBody MarathonDTO body) {
         return ResponseEntity.status(HttpStatusCode.valueOf(201))
-                .body(groupService.save(body));
+                .body(marathonService.save(body));
     }
 
     @DeleteMapping ("/{id}")
     @Operation(
-            description = "Delete a group and members by group ID",
+            description = "Delete a marathon by marathon ID",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "204"),
                     @ApiResponse(description = "Unauthorized/Invalid token", responseCode = "403"),
                     @ApiResponse(description = "Unknown error", responseCode = "400"),
             }
     )
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        groupService.delete(id);
+    public ResponseEntity<Void> update(@PathVariable Long id) {
+        marathonService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
