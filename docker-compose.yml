@@ -19,6 +19,21 @@ services:
     networks:
       - api-network
 
+  spring-api:
+    container_name: spring-api
+    build:
+      context: .
+      dockerfile: Dockerfile  # Certifique-se de que o Dockerfile esteja configurado corretamente
+    ports:
+      - 8080:8080
+    networks:
+      - api-network
+    depends_on:
+      - test-db
+    volumes:
+      - ./scripts:/scripts  # Monta o diretório scripts no container
+    command: ["/bin/sh", "-c", "/scripts/wait-for-it.sh test-db:3306 -- java -jar /app/myapp.jar"]
+
 volumes:
   mariadb_volume:
   test_mariadb_volume:
