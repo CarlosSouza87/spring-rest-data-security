@@ -31,10 +31,6 @@ jobs:
           docker --version
           docker compose version
 
-      - name: Start Docker container for test-db
-        run: |
-          docker compose -f docker-compose.yml up -d test-db
-          sleep 10
 
       - name: Validate dependencies
         run: mvn validate
@@ -107,10 +103,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Start Docker container for test-db
-        run: |
-          docker compose -f docker-compose.yml up -d test-db
-          sleep 10
 
       - name: Validate dependencies
         run: mvn validate
