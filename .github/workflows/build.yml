@@ -1,37 +1,126 @@
-name: SonarCloud
+name: CI/CD Pipeline
+
 on:
   push:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+
 jobs:
-  build:
-    name: Build and analyze
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Maven packages
+
+      - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      - name: Build and analyze
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Check Docker and Docker Compose Versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Start Docker container for test-db
+        run: |
+          docker compose -f docker-compose.yml up -d test-db
+          sleep 10
+
+      - name: Validate dependencies
+        run: mvn validate
+
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Run Unit Tests
+        run: mvn test -Dspring.profiles.active=test
+
+      - name: Generate Jacoco Report
+        run: mvn jacoco:report
+
+      - name: Tear down Docker
+        if: always()
+        run: docker compose -f docker-compose.yml down
+
+  sonar-analysis:
+    needs: unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Compile source code
+        run: mvn compile
+
+      - name: Run SonarCloud Analysis
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=CarlosSouza87_spring-rest-data-security
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=CarlosSouza87_spring-rest-data-security \
+            -Dsonar.organization=CarlosSouza87  \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.java.binaries=target/classes
+
+  system-test:
+    needs: [unit-test, sonar-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Start Docker container for test-db
+        run: |
+          docker compose -f docker-compose.yml up -d test-db
+          sleep 10
+
+      - name: Validate dependencies
+        run: mvn validate
+
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Run System Tests
+        run: mvn verify -Dspring.profiles.active=test
+
+      - name: Tear down Docker
+        if: always()
+        run: docker compose -f docker-compose.yml down
