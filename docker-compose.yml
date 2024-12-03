@@ -18,23 +18,6 @@ services:
     networks:
       - api-network
 
-  test-db:
-    container_name: test-db
-    image: mariadb
-    restart: always
-    environment:
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: test_sample
-      MARIADB_USER: testuser
-      MARIADB_PASSWORD: testpassword
-      MARIADB_ROOT_HOST: '%'
-    ports:
-      - 3307:3306
-    volumes:
-      - test_mariadb_volume:/var/lib/mysql
-    networks:
-      - api-network
-
 volumes:
   mariadb_volume:
   test_mariadb_volume:
