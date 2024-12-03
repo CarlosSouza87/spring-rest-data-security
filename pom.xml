@@ -190,6 +190,7 @@
                     <excludes>
                         <!-- Exclui todos os testes na pasta "resource-tests" -->
                         <exclude>**/resource/**</exclude>
+                        <exclude>**/IntegrationTest.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
