@@ -18,7 +18,7 @@
         <jjwt.version>0.11.5</jjwt.version>
         <modelmapper.version>3.1.0</modelmapper.version>
         <springdoc.version>2.2.0</springdoc.version>
-        <sonar.projectKey>carlossouza87_spring-rest-data-security</sonar.projectKey>
+        <sonar.projectKey>CarlosSouza87_spring-rest-data-security</sonar.projectKey>
         <sonar.organization>carlossouza87</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
@@ -175,7 +175,7 @@
                 <version>3.9.1.2184</version>
                 <configuration>
                     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-                    <sonar.projectKey>carlossouza87_spring-rest-data-security</sonar.projectKey>
+                    <sonar.projectKey>CarlosSouza87_spring-rest-data-security</sonar.projectKey>
                     <sonar.organization>carlossouza87</sonar.organization>
                     <sonar.java.binaries>target/classes</sonar.java.binaries>
                     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
