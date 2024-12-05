@@ -208,11 +208,11 @@
                         <artifactId>flyway-maven-plugin</artifactId>
                         <version>9.16.3</version>
                         <configuration>
-                            <url>jdbc:mariadb://localhost:3306/test_sample</url>
+                            <url>jdbc:mariadb://localhost:3306/sample</url>
                             <user>testuser</user>
                             <password>testpassword</password>
                             <schemas>
-                                <schema>test_sample</schema>
+                                <schema>sample</schema>
                             </schemas>
                         </configuration>
                     </plugin>
