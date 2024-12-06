@@ -188,7 +188,6 @@
                 <version>3.0.0</version>
                 <configuration>
                     <excludes>
-                        <!-- Exclui todos os testes na pasta "resource-tests" -->
                         <exclude>**/resource/**</exclude>
                         <exclude>**/IntegrationTest.java</exclude>
                     </excludes>
