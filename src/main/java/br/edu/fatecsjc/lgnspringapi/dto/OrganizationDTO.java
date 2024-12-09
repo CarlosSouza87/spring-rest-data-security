@@ -12,9 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MemberDTO {
+public class OrganizationDTO {
     @Schema(hidden = true)
     private Long id;
     private String name;
-    private Integer age;
+    private String institutionName;
+    private String street;
+    private String city;
+    private String state;
+    private String country;
+    private String zipcode;
 }

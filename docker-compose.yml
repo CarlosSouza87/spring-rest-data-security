@@ -1,23 +1,42 @@
 version: '3.1'
+
 services:
 
-  maria-db:
-    container_name: maria-db
+  test-db:
+    container_name: test-db
     image: mariadb
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: sample
+      MARIADB_USER: testuser
+      MARIADB_PASSWORD: testpassword
       MARIADB_ROOT_HOST: '%'
     ports:
       - 3306:3306
     volumes:
-      -  mariadb_volume:/var/lib/mysql
+      - test_mariadb_volume:/var/lib/mysql
     networks:
       - api-network
 
+  spring-api:
+    container_name: spring-api
+    build:
+      context: .
+      dockerfile: Dockerfile  # Certifique-se de que o Dockerfile esteja configurado corretamente
+    ports:
+      - 8080:8080
+    networks:
+      - api-network
+    depends_on:
+      - test-db
+    volumes:
+      - ./scripts:/scripts  # Monta o diretório scripts no container
+    command: ["/bin/sh", "-c", "/scripts/wait-for-it.sh test-db:3306 -- java -jar /app/myapp.jar"]
+
 volumes:
   mariadb_volume:
+  test_mariadb_volume:
 
 networks:
   api-network:

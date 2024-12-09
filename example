@@ -1,0 +1,9 @@
+POST /group
+ -> grupo 1 [membro 1, membro 2] -> 1
+
+DELETE /group
+
+POST /organization
+  -> organization 1
+
+DELETE /group

@@ -1,0 +1,130 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Check Docker and Docker Compose Versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Start Docker container for test-db
+        run: |
+          docker compose -f docker-compose.yml up -d test-db
+          sleep 10
+
+      - name: Validate dependencies
+        run: mvn validate
+
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Run Unit Tests
+        run: mvn test
+
+      - name: Generate Jacoco Report
+        run: mvn jacoco:report
+
+      - name: Tear down Docker
+        if: always()
+        run: docker compose -f docker-compose.yml down
+
+  sonar-analysis:
+    needs: unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Check Docker and Docker Compose Versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Start Docker container for test-db
+        run: |
+          docker compose -f docker-compose.yml up -d test-db
+          sleep 10
+
+      - name: Compile source code
+        run: mvn compile
+
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=CarlosSouza87_spring-rest-data-security
+
+  system-test:
+    needs: [unit-test, sonar-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Start Docker container for test-db
+        run: |
+          docker compose -f docker-compose.yml up -d test-db
+          sleep 10
+
+      - name: Validate dependencies
+        run: mvn validate
+
+      - name: Install dependencies
+        run: mvn install -DskipTests
+
+      - name: Run System Tests
+        run: mvn verify -Dspring.profiles.active=test
+
+      - name: Tear down Docker
+        if: always()
+        run: docker compose -f docker-compose.yml down
